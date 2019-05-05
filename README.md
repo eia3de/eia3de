@@ -7,3 +7,9 @@ eia3de is a competitive first person shooter in development, inspired by Team Fo
 <hr>
 
 [Development Log](devlog)
+
+## Install
+
+1. Clone repo
+2. Go to `eia3de/eia3de-client`
+3. run `cargo run`
