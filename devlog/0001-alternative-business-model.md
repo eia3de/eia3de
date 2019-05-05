@@ -80,6 +80,9 @@ be too oppressive, I don't know how such a mechanism would look like yet.
 - calculating operational costs
 - premium services
 - explain why salaries
+- explain why this solution
+- bullshit-free/"for adults"
+- prevention to GAAS problems
 - explore ability to pay level designers
 - player contributions gives access to cosmetics, cannot be promised at the
   moment because no artist on board
