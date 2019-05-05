@@ -114,6 +114,11 @@ far as considering content like frag movies as contributions as well. This
 does seem like a hard problem to tackle however, as price would have to be put
 on the contributions, which end up requiring more work to be done.
 
+The last idea I'd like to write about is the possibility of selling some
+*things* in limited supply and have people resell or bid over them, such as
+special spots in the master server list, VIP tickets for tournament broadcasts,
+billboards in level decors, etc.
+
 That's basically how I view this problem and a possible at this point in time,
 I'm quite keen on it, which is what pushed the start of the devlog in the first
 place, I felt strong enough about it that I needed to write it down.
