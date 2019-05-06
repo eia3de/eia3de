@@ -1,15 +1,15 @@
 <p align=center><code>executing in a</code><br><code>3d environment</code></p>
 
-<hr>
+---
 
-eia3de is a competitive first person shooter in development, inspired by Team Fortress 2's 6v6 format. It features a custom engine written in rust.
+`eia3de` is a set of first-person game design experiments, starting with
+`FORTRESS` which is heavily inspired by Team Fortress 2's community-developed
+6v6 format.
 
-<hr>
+It features a custom engine written in [Rust](https://rust-lang.org).
 
-[Development Log](devlog)
+---
 
-## Install
-
-1. Clone repo
-2. Go to `eia3de/eia3de-client`
-3. run `cargo run`
+[Building Instructions](docs/build.md)  
+[Development Log](docs/devlog)  
+[GPLv3 License](LICENSE)  
