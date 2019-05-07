@@ -1,0 +1,23 @@
+[package]
+name = "eia3de_client"
+version = "0.1.0"
+authors = ["ldesgoui <ldesgoui@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+derivative = "1"
+failure = "0.1"
+genmesh = "0.6"
+lazy_static = "1.3"
+log = "0.4"
+nalgebra = "0.18"
+rand = "0.6"
+rendy = { git = "https://github.com/amethyst/rendy" }
+shrev = "1.1"
+simple_logger = "1.0"
+specs = "0.14"
+specs-derive = "0.4"
+winit = "0.18"
+
+[features]
+default = ["rendy/vulkan"]

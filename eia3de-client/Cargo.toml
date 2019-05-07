@@ -1,7 +1,0 @@
-[package]
-name = "eia3de-client"
-version = "0.1.0"
-authors = ["ldesgoui <ldesgoui@gmail.com>"]
-edition = "2018"
-
-[dependencies]

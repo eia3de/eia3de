@@ -1,6 +1,4 @@
 [workspace]
 members = [
-    "eia3de-client",
-    "eia3de-server",
-    "eia3de-game-fortress",
+    "eia3de_client",
 ]
