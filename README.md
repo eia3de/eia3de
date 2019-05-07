@@ -11,5 +11,6 @@ It features a custom engine written in [Rust](https://rust-lang.org).
 ---
 
 [Building Instructions](docs/build.md)  
+[Changelog](docs/changelog.md)  
 [Development Log](docs/devlog)  
 [GPLv3 License](LICENSE)  
