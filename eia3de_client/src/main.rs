@@ -5,7 +5,37 @@ fn main() {
     let _ = simple_logger::init();
 
     let mut world = World::new();
+    let mut dispatcher = dispatcher();
 
+    setup(&mut world);
+    dispatcher.setup(&mut world.res);
+
+    loop {
+        dispatcher.dispatch(&world.res);
+        world.maintain();
+
+        if world
+            .read_resource::<windowing::WindowLookup>()
+            .0
+            .is_empty()
+        {
+            break;
+        }
+    }
+}
+
+#[rustfmt::skip]
+fn dispatcher<'a, 'b>() -> Dispatcher<'a, 'b> {
+    use eia3de_client::windowing::*;
+
+    DispatcherBuilder::new()
+        .with(DispatchWinitEvents,  "dispatch_winit_events",    &[])
+        .with(DestroyWindows,       "destroy_windows",          &["dispatch_winit_events"])
+        .with(UpdateWindowLookup,   "update_window_lookup",     &["destroy_windows"])
+        .build()
+}
+
+fn setup(world: &mut World) {
     world.register::<windowing::Window>();
 
     world.add_resource(windowing::WinitEventLoop::default());
@@ -32,31 +62,4 @@ fn main() {
         .create_entity()
         .with(windowing::Window(window))
         .build();
-
-    let mut dispatcher = DispatcherBuilder::new()
-        .with(windowing::DispatchWinitEvents, "dispatch_winit_events", &[])
-        .with(
-            windowing::DestroyWindows,
-            "destroy_windows",
-            &["dispatch_winit_events"],
-        )
-        .with(
-            windowing::UpdateWindowLookup,
-            "update_window_lookup",
-            &["dispatch_winit_events", "destroy_windows"],
-        )
-        .build();
-
-    loop {
-        dispatcher.dispatch(&world.res);
-        world.maintain();
-
-        if world
-            .read_resource::<windowing::WindowLookup>()
-            .0
-            .is_empty()
-        {
-            break;
-        }
-    }
 }

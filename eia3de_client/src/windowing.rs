@@ -2,10 +2,7 @@
 
 use shrev::EventChannel;
 use specs::prelude::*;
-use std::{
-    collections::{HashMap, HashSet},
-    sync::Mutex,
-};
+use std::{collections::HashMap, sync::Mutex};
 
 /// Resource
 #[derive(Debug, derivative::Derivative)]
@@ -68,7 +65,7 @@ impl<'a> System<'a> for UpdateWindowLookup {
 
     fn run(&mut self, (entities, windows, mut lookup, mut reader): Self::SystemData) {
         let mut insertions = BitSet::new();
-        let mut removals = HashSet::new();
+        let mut removals = BitSet::new();
 
         for event in windows.channel().read(&mut reader.0) {
             match *event {
@@ -76,13 +73,13 @@ impl<'a> System<'a> for UpdateWindowLookup {
                     let _ = insertions.add(id);
                 }
                 ComponentEvent::Removed(id) => {
-                    let _ = removals.insert(id);
+                    let _ = removals.add(id);
                 }
                 _ => {}
             }
         }
 
-        lookup.0.retain(|_, v| !removals.contains(&v.id()));
+        lookup.0.retain(|_, v| !removals.contains(v.id()));
 
         lookup.0.extend(
             (&entities, &windows, &insertions)
@@ -109,8 +106,10 @@ impl<'a> System<'a> for DestroyWindows {
     );
 
     fn run(&mut self, (lookup, channel, mut reader, mut windows): Self::SystemData) {
-        use winit::Event::WindowEvent;
-        use winit::WindowEvent::{CloseRequested, Destroyed};
+        use winit::{
+            Event::WindowEvent,
+            WindowEvent::{CloseRequested, Destroyed},
+        };
 
         for event in channel.read(&mut reader.0) {
             match event {
