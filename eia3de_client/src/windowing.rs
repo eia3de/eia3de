@@ -96,10 +96,6 @@ pub struct UpdateWindowLookupReader(pub ReaderId<ComponentEvent>);
 
 impl ManualSetup for UpdateWindowLookupReader {
     fn setup(res: &mut Resources) {
-        if res.has_value::<Self>() {
-            return;
-        }
-
         WriteStorage::<Window>::setup(res);
         let reader = WriteStorage::<Window>::fetch(&res).register_reader();
         res.insert(Self(reader))
@@ -151,10 +147,6 @@ pub struct DestroyWindowsReader(pub ReaderId<winit::Event>);
 
 impl ManualSetup for DestroyWindowsReader {
     fn setup(res: &mut Resources) {
-        if res.has_value::<Self>() {
-            return;
-        }
-
         Write::<WinitEventChannel>::setup(res);
         let reader = Write::<WinitEventChannel>::fetch(&res).register_reader();
         res.insert(Self(reader))
