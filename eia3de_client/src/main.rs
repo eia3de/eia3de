@@ -1,4 +1,3 @@
-use eia3de_client::windowing;
 use specs::prelude::*;
 
 fn main() {
@@ -36,8 +35,10 @@ fn dispatcher<'a, 'b>() -> Dispatcher<'a, 'b> {
 }
 
 fn setup(world: &mut World) {
+    use eia3de_client::windowing::*;
+
     let window = {
-        let event_loop = world.read_resource::<windowing::WinitEventLoop>();
+        let event_loop = world.read_resource::<WinitEventLoop>();
         let lock = event_loop.inner.try_lock().unwrap();
 
         winit::WindowBuilder::new()
@@ -46,8 +47,5 @@ fn setup(world: &mut World) {
             .unwrap()
     };
 
-    world
-        .create_entity()
-        .with(windowing::Window(window))
-        .build();
+    world.create_entity().with(Window(window)).build();
 }
