@@ -7,8 +7,8 @@ fn main() {
     let mut world = World::new();
     let mut dispatcher = dispatcher();
 
-    setup(&mut world);
     dispatcher.setup(&mut world.res);
+    setup(&mut world);
 
     loop {
         dispatcher.dispatch(&world.res);
@@ -36,20 +36,8 @@ fn dispatcher<'a, 'b>() -> Dispatcher<'a, 'b> {
 }
 
 fn setup(world: &mut World) {
-    world.register::<windowing::Window>();
-
-    world.add_resource(windowing::WinitEventLoop::default());
-    world.add_resource(windowing::WindowLookup::default());
-
-    let mut wec = windowing::WinitEventChannel::default();
-    world.add_resource(windowing::DestroyWindowsReader(wec.register_reader()));
-    world.add_resource(wec);
-
-    let reader = world.write_storage::<windowing::Window>().register_reader();
-    world.add_resource(windowing::UpdateWindowLookupReader(reader));
-
     let window = {
-        let event_loop = &world.read_resource::<windowing::WinitEventLoop>();
+        let event_loop = world.read_resource::<windowing::WinitEventLoop>();
         let lock = event_loop.inner.try_lock().unwrap();
 
         winit::WindowBuilder::new()

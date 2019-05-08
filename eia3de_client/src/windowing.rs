@@ -1,5 +1,6 @@
 //! Windowing
 
+use crate::{ManualSetup, ManualSetupHandler};
 use shrev::EventChannel;
 use specs::prelude::*;
 use std::{collections::HashMap, sync::Mutex};
@@ -60,7 +61,7 @@ impl<'a> System<'a> for UpdateWindowLookup {
         Entities<'a>,
         ReadStorage<'a, Window>,
         Write<'a, WindowLookup>,
-        WriteExpect<'a, UpdateWindowLookupReader>,
+        Write<'a, UpdateWindowLookupReader, ManualSetupHandler>,
     );
 
     fn run(&mut self, (entities, windows, mut lookup, mut reader): Self::SystemData) {
@@ -93,6 +94,18 @@ impl<'a> System<'a> for UpdateWindowLookup {
 #[derive(Debug)]
 pub struct UpdateWindowLookupReader(pub ReaderId<ComponentEvent>);
 
+impl ManualSetup for UpdateWindowLookupReader {
+    fn setup(res: &mut Resources) {
+        if res.has_value::<Self>() {
+            return;
+        }
+
+        WriteStorage::<Window>::setup(res);
+        let reader = WriteStorage::<Window>::fetch(&res).register_reader();
+        res.insert(Self(reader))
+    }
+}
+
 /// System
 #[derive(Copy, Clone, Debug, Default, Hash, Eq, PartialEq)]
 pub struct DestroyWindows;
@@ -101,7 +114,7 @@ impl<'a> System<'a> for DestroyWindows {
     type SystemData = (
         Read<'a, WindowLookup>,
         Read<'a, WinitEventChannel>,
-        WriteExpect<'a, DestroyWindowsReader>,
+        Write<'a, DestroyWindowsReader, ManualSetupHandler>,
         WriteStorage<'a, Window>,
     );
 
@@ -135,3 +148,15 @@ impl<'a> System<'a> for DestroyWindows {
 /// Resource
 #[derive(Debug)]
 pub struct DestroyWindowsReader(pub ReaderId<winit::Event>);
+
+impl ManualSetup for DestroyWindowsReader {
+    fn setup(res: &mut Resources) {
+        if res.has_value::<Self>() {
+            return;
+        }
+
+        Write::<WinitEventChannel>::setup(res);
+        let reader = Write::<WinitEventChannel>::fetch(&res).register_reader();
+        res.insert(Self(reader))
+    }
+}
