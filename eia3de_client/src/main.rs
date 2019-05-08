@@ -19,12 +19,13 @@ fn main() {
     world.add_resource(windowing::UpdateWindowLookupReader(reader));
 
     let window = {
-        let event_loop = &world.system_data::<Read<windowing::WinitEventLoop>>().0;
+        let event_loop = &world.read_resource::<windowing::WinitEventLoop>();
+        let lock = event_loop.inner.try_lock().unwrap();
 
         winit::WindowBuilder::new()
             .with_title("eia3de")
-            .build(event_loop)
-            .expect("window creation")
+            .build(&*lock)
+            .unwrap()
     };
 
     world
@@ -47,7 +48,7 @@ fn main() {
         .build();
 
     loop {
-        dispatcher.dispatch(&mut world.res);
+        dispatcher.dispatch(&world.res);
         world.maintain();
 
         if world

@@ -1,19 +1,32 @@
 //! Windowing
 
+use shrev::EventChannel;
 use specs::prelude::*;
+use std::{
+    collections::{HashMap, HashSet},
+    sync::Mutex,
+};
 
 /// Resource
 #[derive(Debug, derivative::Derivative)]
 #[derivative(Default)]
-pub struct WinitEventLoop(
-    #[derivative(Default(value = "winit::EventsLoop::new()"))] pub winit::EventsLoop,
-);
+pub struct WinitEventLoop {
+    #[derivative(Default(value = "Mutex::new(winit::EventsLoop::new())"))]
+    pub inner: Mutex<winit::EventsLoop>,
+}
 
+/// # Safety
+/// winit::EventsLoop is not Send, we wrap it in a std::sync::Mutex and its
+/// only access pattern is through the ECS, it *should* be safe.
 unsafe impl Send for WinitEventLoop {}
+
+/// # Safety
+/// winit::EventsLoop is not Sync, we wrap it in a std::sync::Mutex and its
+/// only access pattern is through the ECS, it *should* be safe.
 unsafe impl Sync for WinitEventLoop {}
 
 /// Resource
-pub type WinitEventChannel = shrev::EventChannel<winit::Event>;
+pub type WinitEventChannel = EventChannel<winit::Event>;
 
 /// System
 #[derive(Copy, Clone, Debug, Default, Hash, Eq, PartialEq)]
@@ -22,8 +35,13 @@ pub struct DispatchWinitEvents;
 impl<'a> System<'a> for DispatchWinitEvents {
     type SystemData = (Write<'a, WinitEventLoop>, Write<'a, WinitEventChannel>);
 
-    fn run(&mut self, (mut wel, mut wec): Self::SystemData) {
-        wel.0.poll_events(|event| wec.single_write(event))
+    fn run(&mut self, (wel, mut wec): Self::SystemData) {
+        let mut lock = wel
+            .inner
+            .try_lock()
+            .expect("WinitEventLoop must not be shared");
+
+        lock.poll_events(|event| wec.single_write(event));
     }
 }
 
@@ -34,7 +52,7 @@ pub struct Window(pub winit::Window);
 
 /// Resource
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
-pub struct WindowLookup(pub std::collections::HashMap<winit::WindowId, Entity>);
+pub struct WindowLookup(pub HashMap<winit::WindowId, Entity>);
 
 /// System
 #[derive(Copy, Clone, Debug, Default, Hash, Eq, PartialEq)]
@@ -50,38 +68,33 @@ impl<'a> System<'a> for UpdateWindowLookup {
 
     fn run(&mut self, (entities, windows, mut lookup, mut reader): Self::SystemData) {
         let mut insertions = BitSet::new();
-        let mut removals = BitSet::new();
+        let mut removals = HashSet::new();
 
         for event in windows.channel().read(&mut reader.0) {
             match *event {
                 ComponentEvent::Inserted(id) => {
-                    insertions.add(id);
+                    let _ = insertions.add(id);
                 }
                 ComponentEvent::Removed(id) => {
-                    removals.add(id);
+                    let _ = removals.insert(id);
                 }
                 _ => {}
             }
         }
+
+        lookup.0.retain(|_, v| !removals.contains(&v.id()));
 
         lookup.0.extend(
             (&entities, &windows, &insertions)
                 .join()
                 .map(|(entity, window, _)| (window.0.id(), entity)),
         );
-
-        let removed_entities = (&entities, &removals)
-            .join()
-            .map(|(entity, _)| entity)
-            .collect::<std::collections::HashSet<_>>();
-
-        lookup.0.retain(|_, v| !removed_entities.contains(v))
     }
 }
 
 /// Resource
 #[derive(Debug)]
-pub struct UpdateWindowLookupReader(pub shrev::ReaderId<ComponentEvent>);
+pub struct UpdateWindowLookupReader(pub ReaderId<ComponentEvent>);
 
 /// System
 #[derive(Copy, Clone, Debug, Default, Hash, Eq, PartialEq)]
@@ -96,20 +109,23 @@ impl<'a> System<'a> for DestroyWindows {
     );
 
     fn run(&mut self, (lookup, channel, mut reader, mut windows): Self::SystemData) {
+        use winit::Event::WindowEvent;
+        use winit::WindowEvent::{CloseRequested, Destroyed};
+
         for event in channel.read(&mut reader.0) {
             match event {
-                winit::Event::WindowEvent {
-                    event: winit::WindowEvent::CloseRequested,
+                WindowEvent {
+                    event: CloseRequested,
                     window_id,
                 }
-                | winit::Event::WindowEvent {
-                    event: winit::WindowEvent::Destroyed,
+                | WindowEvent {
+                    event: Destroyed,
                     window_id,
                 } => {
-                    lookup
-                        .0
-                        .get(&window_id)
-                        .map(|&entity| windows.remove(entity));
+                    if let Some(&entity) = lookup.0.get(&window_id) {
+                        log::warn!("destroying window component: {:?} {:?}", entity, window_id);
+                        let _ = windows.remove(entity);
+                    };
                 }
                 _ => {}
             }
@@ -119,4 +135,4 @@ impl<'a> System<'a> for DestroyWindows {
 
 /// Resource
 #[derive(Debug)]
-pub struct DestroyWindowsReader(pub shrev::ReaderId<winit::Event>);
+pub struct DestroyWindowsReader(pub ReaderId<winit::Event>);
