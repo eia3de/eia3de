@@ -44,6 +44,7 @@ impl ManualSetup for Rendy {
     fn setup(res: &mut Resources) {
         let config: rendy::factory::Config = Default::default();
         let (factory, families) = rendy::factory::init(config).expect("failed to init rendy");
+
         res.insert(Self {
             factory,
             families,
@@ -135,10 +136,12 @@ pub struct ManageGraphReader {
 
 impl ManualSetup for ManageGraphReader {
     fn setup(res: &mut Resources) {
-        Write::<WinitEventChannel>::setup(res);
         WriteStorage::<Window>::setup(res);
+        Write::<WinitEventChannel>::setup(res);
+
         let window_storage = WriteStorage::<Window>::fetch(&res).register_reader();
         let winit = Write::<WinitEventChannel>::fetch(&res).register_reader();
+
         res.insert(Self {
             window_storage,
             winit,
