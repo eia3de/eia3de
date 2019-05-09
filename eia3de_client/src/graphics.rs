@@ -49,14 +49,6 @@ impl ManualSetup for Rendy {
     }
 }
 
-impl Drop for Rendy {
-    fn drop(&mut self) {
-        if let Some(graph) = self.graph.take() {
-            graph.dispose(&mut self.factory, &mut ());
-        }
-    }
-}
-
 /// System
 #[derive(Clone, Copy, Debug, Default, Hash, Eq, PartialEq)]
 pub struct ManageGraph;
@@ -149,14 +141,14 @@ impl<'a> System<'a> for RunGraphics {
 
 lazy_static::lazy_static! {
     static ref VERTEX: StaticShaderInfo = StaticShaderInfo::new(
-        concat!(env!("CARGO_MANIFEST_DIR"), "/src/shader.vert"),
+        concat!(env!("CARGO_MANIFEST_DIR"), "/glsl/shader.vert"),
         ShaderKind::Vertex,
         SourceLanguage::GLSL,
         "main",
     );
 
     static ref FRAGMENT: StaticShaderInfo = StaticShaderInfo::new(
-        concat!(env!("CARGO_MANIFEST_DIR"), "/src/shader.frag"),
+        concat!(env!("CARGO_MANIFEST_DIR"), "/glsl/shader.frag"),
         ShaderKind::Fragment,
         SourceLanguage::GLSL,
         "main",
