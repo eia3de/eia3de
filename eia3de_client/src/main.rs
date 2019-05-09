@@ -1,7 +1,7 @@
 use specs::prelude::*;
 
 fn main() {
-    let _ = simple_logger::init();
+    let _ = simple_logger::init_with_level(log::Level::Warn);
 
     let mut world = World::new();
     let mut dispatcher = dispatcher();

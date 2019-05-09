@@ -25,6 +25,22 @@ pub struct Rendy {
     pub factory: Factory<Backend>,
 }
 
+impl Rendy {
+    unsafe fn split_mut<'a>(
+        &'a mut self,
+    ) -> (
+        &'a mut Factory<Backend>,
+        &'a mut Families<Backend>,
+        Option<&'a mut Graph<Backend, ()>>,
+    ) {
+        (
+            &mut *(&self.factory as *const _ as *mut _),
+            &mut *(&self.families as *const _ as *mut _),
+            self.graph.as_mut(),
+        )
+    }
+}
+
 impl ManualSetup for Rendy {
     fn setup(res: &mut Resources) {
         let config: rendy::factory::Config = Default::default();
@@ -94,13 +110,9 @@ impl<'a> System<'a> for ManageGraph {
                 );
             }
 
-            let graph = builder
-                .build(
-                    unsafe { &mut *(&rendy.factory as *const _ as *mut _) },
-                    unsafe { &mut *(&rendy.families as *const _ as *mut _) },
-                    &mut (),
-                )
-                .unwrap();
+            let (mut factory, mut families, _) = unsafe { rendy.split_mut() };
+
+            let graph = builder.build(&mut factory, &mut families, &mut ()).unwrap();
 
             rendy.graph = Some(graph);
         }
@@ -127,14 +139,11 @@ impl<'a> System<'a> for RunGraphics {
     type SystemData = (Write<'a, Rendy, ManualSetupHandler>,);
 
     fn run(&mut self, (mut rendy,): Self::SystemData) {
-        let factory: &mut Factory<Backend> =
-            unsafe { &mut *(&rendy.factory as *const _ as *mut _) };
-        let families: &mut Families<Backend> =
-            unsafe { &mut *(&rendy.families as *const _ as *mut _) };
+        let (factory, families, graph) = unsafe { rendy.split_mut() };
 
         factory.maintain(families);
 
-        if let Some(graph) = rendy.graph.as_mut() {
+        if let Some(graph) = graph {
             graph.run(factory, families, &mut ());
         }
     }
