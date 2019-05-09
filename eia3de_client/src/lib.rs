@@ -1,6 +1,5 @@
-pub mod windowing;
-// mod graphics;
-
+pub mod graphics;
 mod specs;
+pub mod windowing;
 
 pub use crate::specs::{ManualSetup, ManualSetupHandler};

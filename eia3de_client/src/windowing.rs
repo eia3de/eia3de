@@ -3,7 +3,10 @@
 use crate::{ManualSetup, ManualSetupHandler};
 use shrev::EventChannel;
 use specs::prelude::*;
-use std::{collections::HashMap, sync::Mutex};
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex},
+};
 
 /// Resource
 #[derive(Debug, derivative::Derivative)]
@@ -46,7 +49,7 @@ impl<'a> System<'a> for DispatchWinitEvents {
 /// Component
 #[derive(Debug, specs_derive::Component)]
 #[storage(FlaggedStorage)]
-pub struct Window(pub winit::Window);
+pub struct Window(pub Arc<winit::Window>);
 
 /// Resource
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
