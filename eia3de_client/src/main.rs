@@ -36,18 +36,16 @@ fn dispatcher<'a, 'b>() -> Dispatcher<'a, 'b> {
 fn setup(world: &mut World) {
     use eia3de_client::windowing::*;
 
-    for _ in 0..5 {
-        let window = {
-            let event_loop = world.read_resource::<WinitEventLoop>();
-            let lock = event_loop.inner.try_lock().unwrap();
+    let window = {
+        let event_loop = world.read_resource::<WinitEventLoop>();
+        let lock = event_loop.inner.try_lock().unwrap();
 
-            winit::WindowBuilder::new()
-                .with_title("eia3de")
-                .with_dimensions((200, 200).into())
-                .build(&*lock)
-                .unwrap()
-        };
+        winit::WindowBuilder::new()
+            .with_title("eia3de")
+            .with_dimensions((200, 200).into())
+            .build(&*lock)
+            .unwrap()
+    };
 
-        world.create_entity().with(Window(window.into())).build();
-    }
+    world.create_entity().with(Window(window.into())).build();
 }

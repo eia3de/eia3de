@@ -1,6 +1,9 @@
 //! Graphics
 
-use crate::{windowing::Window, ManualSetup, ManualSetupHandler};
+use crate::{
+    windowing::{Window, WinitEventChannel},
+    ManualSetup, ManualSetupHandler,
+};
 use rendy::{
     command::{Families, QueueId, RenderPassEncoder},
     factory::Factory,
@@ -55,14 +58,30 @@ pub struct ManageGraph;
 
 impl<'a> System<'a> for ManageGraph {
     type SystemData = (
+        Read<'a, WinitEventChannel>,
         ReadStorage<'a, Window>,
         Write<'a, ManageGraphReader, ManualSetupHandler>,
         Write<'a, Rendy, ManualSetupHandler>,
     );
 
-    fn run(&mut self, (windows, mut reader, mut rendy): Self::SystemData) {
-        let windows_changed = windows.channel().read(&mut reader.0).count() > 0;
-        let should_teardown = rendy.graph.is_some() && windows_changed;
+    fn run(&mut self, (wec, windows, mut reader, mut rendy): Self::SystemData) {
+        let mut windows_resized = false;
+        for event in wec.read(&mut reader.winit) {
+            match *event {
+                winit::Event::WindowEvent {
+                    event: winit::WindowEvent::Resized(_),
+                    ..
+                }
+                | winit::Event::WindowEvent {
+                    event: winit::WindowEvent::Refresh,
+                    ..
+                } => windows_resized = true,
+                _ => {}
+            }
+        }
+
+        let windows_changed = windows.channel().read(&mut reader.window_storage).count() > 0;
+        let should_teardown = rendy.graph.is_some() && (windows_resized || windows_changed);
 
         if should_teardown {
             let graph = rendy.graph.take().unwrap();
@@ -109,13 +128,21 @@ impl<'a> System<'a> for ManageGraph {
 
 /// Resource
 #[derive(Debug)]
-pub struct ManageGraphReader(pub ReaderId<ComponentEvent>);
+pub struct ManageGraphReader {
+    pub window_storage: ReaderId<ComponentEvent>,
+    pub winit: ReaderId<winit::Event>,
+}
 
 impl ManualSetup for ManageGraphReader {
     fn setup(res: &mut Resources) {
+        Write::<WinitEventChannel>::setup(res);
         WriteStorage::<Window>::setup(res);
-        let reader = WriteStorage::<Window>::fetch(&res).register_reader();
-        res.insert(Self(reader));
+        let window_storage = WriteStorage::<Window>::fetch(&res).register_reader();
+        let winit = Write::<WinitEventChannel>::fetch(&res).register_reader();
+        res.insert(Self {
+            window_storage,
+            winit,
+        });
     }
 }
 
