@@ -8,6 +8,8 @@
 
 ### NixOS/nixpkgs
 
+- [Rust overlay](https://github.com/mozilla/nixpkgs-mozilla#rust-overlay)
+
 ```nix
 { pkgs ? import <nixpkgs> {}
 }:
@@ -16,26 +18,26 @@ with pkgs;
 
 mkShell {
   buildInputs = [
-    latest.rustChannels.stable.rust
-
-    pkgconfig
-    xlibs.libX11
     cmake
+    latest.rustChannels.stable.rust
+    pkgconfig
+    vulkan-validation-layers
+    xlibs.libX11
   ];
 
-  APPEND_LD_LIBRARY_PATH = lib.concatMapStringsSep ":" (x: x + "/lib") (with pkgs; [
+  APPEND_LIBRARY_PATH = pkgs.stdenv.lib.makeLibraryPath [
     vulkan-loader
-    libGL
-    xlibs.libX11
     xlibs.libXcursor
     xlibs.libXi
     xlibs.libXrandr
-    xlibs.libXxf86vm
-    xorg.libxcb
-  ]);
+  ];
+
+  # RUSTC_WRAPPER = "sccache";
+  RUSTFLAGS = "-C target-cpu=native";
 
   shellHook = ''
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$APPEND_LD_LIBRARY_PATH
+    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$APPEND_LIBRARY_PATH"
+    export PATH="$PATH:$HOME/.cargo/bin"
   '';
 }
 ```
