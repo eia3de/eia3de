@@ -9,7 +9,7 @@ pub trait ManualSetup {
     fn setup(res: &mut Resources);
 }
 
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Hash, Eq, PartialEq)]
 pub struct ManualSetupHandler;
 
 impl<T> SetupHandler<T> for ManualSetupHandler
@@ -24,3 +24,6 @@ where
         T::setup(res)
     }
 }
+
+#[derive(Clone, Copy, Debug, Default, Hash, Eq, PartialEq)]
+pub struct Teardown;

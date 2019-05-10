@@ -1,3 +1,4 @@
+use eia3de_client::{graphics::*, windowing::*, Teardown};
 use specs::prelude::*;
 
 fn main() {
@@ -13,29 +14,30 @@ fn main() {
         dispatcher.dispatch(&world.res);
         world.maintain();
 
-        use eia3de_client::windowing::WindowLookup;
         if world.read_resource::<WindowLookup>().0.is_empty() {
             break;
         }
     }
+
+    world.add_resource(Teardown);
+    DestroyWindows.run_now(&mut world.res);
+    DestroyGraph.run_now(&mut world.res);
 }
 
 #[rustfmt::skip]
 fn dispatcher<'a, 'b>() -> Dispatcher<'a, 'b> {
-    use eia3de_client::{windowing::*, graphics::*};
 
     DispatcherBuilder::new()
         .with(DispatchWinitEvents,  "dispatch_winit_events",    &[])
         .with(DestroyWindows,       "destroy_windows",          &["dispatch_winit_events"])
         .with(UpdateWindowLookup,   "update_window_lookup",     &["destroy_windows"])
-        .with(ManageGraph,          "manage_graph",             &["destroy_windows"])
-        .with(RunGraphics,          "run_graphics",             &["manage_graph"])
+        .with(DestroyGraph,         "destroy_graph",            &["destroy_windows"])
+        .with(BuildGraph,           "build_graph",              &["destroy_graph"])
+        .with(RunGraphics,          "run_graphics",             &["build_graph"])
         .build()
 }
 
 fn setup(world: &mut World) {
-    use eia3de_client::windowing::*;
-
     let window = {
         let event_loop = world.read_resource::<WinitEventLoop>();
         let lock = event_loop.inner.try_lock().unwrap();

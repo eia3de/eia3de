@@ -1,6 +1,6 @@
 //! Windowing
 
-use crate::{ManualSetup, ManualSetupHandler};
+use crate::{ManualSetup, ManualSetupHandler, Teardown};
 use shrev::EventChannel;
 use specs::prelude::*;
 use std::{
@@ -111,17 +111,25 @@ pub struct DestroyWindows;
 
 impl<'a> System<'a> for DestroyWindows {
     type SystemData = (
+        Option<Read<'a, Teardown>>,
         Read<'a, WindowLookup>,
         Read<'a, WinitEventChannel>,
         Write<'a, DestroyWindowsReader, ManualSetupHandler>,
         WriteStorage<'a, Window>,
     );
 
-    fn run(&mut self, (lookup, channel, mut reader, mut windows): Self::SystemData) {
+    fn run(&mut self, (teardown, lookup, channel, mut reader, mut windows): Self::SystemData) {
         use winit::{
             Event::WindowEvent,
             WindowEvent::{CloseRequested, Destroyed},
         };
+
+        if teardown.is_some() {
+            for &entity in lookup.0.values() {
+                let _ = windows.remove(entity);
+            }
+            return;
+        }
 
         for event in channel.read(&mut reader.0) {
             match event {
