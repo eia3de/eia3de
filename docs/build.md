@@ -21,6 +21,7 @@ mkShell {
     cmake
     latest.rustChannels.stable.rust
     pkgconfig
+    python3
     vulkan-validation-layers
     xlibs.libX11
   ];
