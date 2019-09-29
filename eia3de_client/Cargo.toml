@@ -12,7 +12,7 @@ log = "0.4"
 rendy = { git = "https://github.com/amethyst/rendy" }
 shrev = "1.1"
 simple_logger = "1.0"
-specs = "0.14"
+specs = "0.15"
 specs-derive = "0.4"
 winit = "0.18"
 
