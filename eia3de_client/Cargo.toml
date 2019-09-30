@@ -5,7 +5,7 @@ authors = ["ldesgoui <ldesgoui@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-amethyst = "0.12"
+amethyst = "0.13"
 log = "0.4"
 simple_logger = "1.0"
 
