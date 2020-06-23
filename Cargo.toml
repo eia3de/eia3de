@@ -1,0 +1,7 @@
+[workspace]
+members = [
+    "eia3de-client-desktop",
+]
+
+[profile.dev.package."*"]
+opt-level = 2

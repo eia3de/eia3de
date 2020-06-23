@@ -1,0 +1,18 @@
+[package]
+name = "eia3de-client-desktop"
+version = "0.0.0"
+authors = ["the eia3de developers"]
+edition = "2018"
+
+[dependencies]
+futures = "0.3"
+log = "0.4"
+wgpu = "0.5"
+wgpu_glyph = "0.9"
+winit = "0.20"
+
+pretty_env_logger = "*"
+
+# directories-next = "1"
+# legion = "0.2"
+# nalgebra = "0.21"
