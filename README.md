@@ -2,4 +2,4 @@
 
 ---
 
-[GPLv3 License](LICENSE)
+[AGPL-3.0 License](LICENSE)
