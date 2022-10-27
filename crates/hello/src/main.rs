@@ -5,6 +5,6 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
-        .add_plugin(RapierRenderPlugin)
+        .add_plugin(RapierDebugRenderPlugin::default())
         .run();
 }
