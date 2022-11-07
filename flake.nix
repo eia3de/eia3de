@@ -23,7 +23,14 @@
         {
           devShells.default = pkgs.mkShell rec  {
             nativeBuildInputs = with pkgsBuildHost; [
-              inputs'.fenix.packages.default.toolchain
+              (inputs'.fenix.packages.complete.withComponents [
+                "cargo"
+                "clippy"
+                "rust-analyzer"
+                "rust-src"
+                "rustc"
+                "rustfmt"
+              ])
 
               pkg-config
             ];
