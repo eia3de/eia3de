@@ -2,5 +2,12 @@
 members = [ "crates/*" ]
 resolver = "2"
 
+[workspace.package]
+authors = ["The eia3de Developers"]
+edition = "2021"
+license = "AGPL-3.0-only"
+publish = false
+version = "0.0.0"
+
 [profile.dev]
-debug = false
+debug = 1
