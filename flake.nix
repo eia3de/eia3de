@@ -32,6 +32,8 @@
                 "rustfmt"
               ])
 
+              cargo-watch
+
               pkg-config
             ];
 
