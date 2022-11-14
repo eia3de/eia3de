@@ -14,6 +14,8 @@ fn main() {
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugin(RapierDebugRenderPlugin::default())
         .add_startup_system(my_setup)
+        .add_system(grab_mouse)
+        .add_system(my_player_control)
         .run();
 }
 
@@ -44,8 +46,42 @@ fn my_setup(mut cmd: Commands) {
     });
 
     cmd.spawn((
-        RigidBody::Fixed,
         TransformBundle::from(Transform::from_xyz(0., -1e-5, 0.)),
+        RigidBody::Fixed,
         Collider::cuboid(1e5, 1e-5, 1e5),
     ));
+}
+
+fn grab_mouse(
+    mut windows: ResMut<Windows>,
+    mouse: Res<Input<MouseButton>>,
+    key: Res<Input<KeyCode>>,
+) {
+    let win = windows.primary_mut();
+
+    if mouse.just_pressed(MouseButton::Left) {
+        win.set_cursor_visibility(false);
+        win.set_cursor_grab_mode(bevy::window::CursorGrabMode::Locked);
+    }
+
+    if key.pressed(KeyCode::Escape) {
+        win.set_cursor_visibility(true);
+        win.set_cursor_grab_mode(bevy::window::CursorGrabMode::None);
+    }
+}
+
+fn my_player_control(
+    mut mouse_motion: EventReader<bevy::input::mouse::MouseMotion>,
+    key: Res<Input<KeyCode>>,
+) {
+    let view_angle_delta: Vec2 = mouse_motion.iter().map(|ev| ev.delta).sum();
+    let wish_dir: Vec3 = [
+        (KeyCode::W, Vec3::X),
+        (KeyCode::S, -Vec3::X),
+        (KeyCode::A, Vec3::Z),
+        (KeyCode::D, -Vec3::Z),
+    ]
+    .into_iter()
+    .filter_map(|(k, v)| key.pressed(k).then_some(v))
+    .sum();
 }
