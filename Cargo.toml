@@ -11,3 +11,6 @@ version = "0.0.0"
 
 [profile.dev]
 debug = 1
+
+[patch.crates-io]
+bevy_rapier3d = { git = "https://github.com/dimforge/bevy_rapier", rev = "551351051c3db1b85c298c9b65e8e9e5f25f72ff" }

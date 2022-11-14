@@ -10,14 +10,14 @@ version.workspace = true
 [dependencies]
 
 [dependencies.bevy]
-version = "0.8"
+version = "0.9"
 features = [
     "dynamic",
     "wayland",
 ]
 
 [dependencies.bevy_rapier3d]
-version = "0.17"
+version = "0.18"
 features = [
     "parallel",
     "simd-nightly",
